@@ -40,10 +40,10 @@ for epoch in range(num_epochs):
       plt.imshow(inputs[0].permute(1, 2, 0).numpy() * 255.0)
       plt.subplot(1, 3, 2)
       plt.title('Output')
-      plt.imshow(outputs[0].numpy().squeeze() * 255.0, cmap='gray')
+      plt.imshow(outputs[0].numpy().squeeze() * 255.0)
       plt.subplot(1, 3, 3)
       plt.title('Target')
-      plt.imshow(targets[0].numpy().squeeze() * 255.0, cmap='gray')
+      plt.imshow(targets[0].numpy().squeeze() * 255.0)
 
       plt.savefig(f'result.png')
       plt.close()
