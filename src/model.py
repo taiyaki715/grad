@@ -27,20 +27,20 @@ class Head(torch.nn.Module):
     super().__init__()
 
     self.conv1 = torch.nn.Conv2d(1, 128, kernel_size=3, stride=1, padding=1)
-    self.pool1 = torch.nn.Upsample(scale_factor=2, mode='nearest')
+    self.upsample1 = torch.nn.Upsample(scale_factor=2, mode='nearest')
     self.conv2 = torch.nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=1)
-    self.pool2 = torch.nn.Upsample(scale_factor=2, mode='nearest')
+    self.upsample2 = torch.nn.Upsample(scale_factor=2, mode='nearest')
     self.conv3 = torch.nn.Conv2d(64, 1, kernel_size=3, stride=1, padding=1)
-    self.pool3 = torch.nn.Upsample(scale_factor=2, mode='nearest')
+    self.upsample3 = torch.nn.Upsample(scale_factor=2, mode='nearest')
 
   def forward(self, x):
     x = torch.reshape(x, (-1, 1, 64, 64))
     x = self.conv1(x)
-    x = self.pool1(x)
+    x = self.upsample1(x)
     x = self.conv2(x)
-    x = self.pool2(x)
+    x = self.upsample2(x)
     x = self.conv3(x)
-    x = self.pool3(x)
+    x = self.upsample3(x)
 
     return x
 
