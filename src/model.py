@@ -6,8 +6,8 @@ class CustomViT(torch.nn.Module):
   def __init__(self):
     super().__init__()
 
-    self.vit = torchvision.models.vit_b_16(weights='ViT_B_16_Weights.DEFAULT')
-    self.vit.heads = torch.nn.Linear(in_features=768, out_features=784)
+    self.vit = torchvision.models.vit_l_16(weights='ViT_L_16_Weights.IMAGENET1K_SWAG_E2E_V1')
+    self.vit.heads = torch.nn.Linear(in_features=1024, out_features=4096)
 
     # ViTのヘッドを除いてパラメータを固定
     for name, param in self.vit.named_parameters():
@@ -34,7 +34,7 @@ class Head(torch.nn.Module):
     self.pool3 = torch.nn.Upsample(scale_factor=2, mode='nearest')
 
   def forward(self, x):
-    x = torch.reshape(x, (-1, 1, 28, 28))
+    x = torch.reshape(x, (-1, 1, 64, 64))
     x = self.conv1(x)
     x = self.pool1(x)
     x = self.conv2(x)
@@ -53,7 +53,7 @@ class Model(torch.nn.Module):
     self.head = Head()
 
   def __str__(self):
-    return torchinfo.summary(self, input_size=(1, 3, 224, 224))
+    return torchinfo.summary(self, input_size=(1, 3, 512, 512))
 
   def forward(self, x):
     x = self.vit(x)

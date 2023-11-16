@@ -28,7 +28,7 @@ class Dataset(torch.utils.data.Dataset):
     return image, depth
 
   def transform(self, image, depth):
-    i, j, h, w = torchvision.transforms.RandomCrop.get_params(image, output_size=(224, 224))
+    i, j, h, w = torchvision.transforms.RandomCrop.get_params(image, output_size=(512, 512))
     image = torchvision.transforms.functional.crop(image, i, j, h, w)
     depth = torchvision.transforms.functional.crop(depth, i, j, h, w)
 
