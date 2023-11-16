@@ -7,7 +7,7 @@ import torchvision
 
 class Dataset(torch.utils.data.Dataset):
   def __init__(self):
-    image_paths = [str(path) for path in glob.glob("data/validation/*/*.png")]
+    image_paths = [str(path) for path in glob.glob("/Volumes/western_digital_4tb/train/*/*/*/*.png")]
     depth_paths = [path.replace(".png", "_depth.npy") for path in image_paths]
     self.data_paths = list(zip(image_paths, depth_paths))
 
