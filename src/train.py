@@ -5,8 +5,12 @@ from data_loader import Dataset
 from model import Model
 
 # データセットの定義
-dataset = Dataset()
+dataset = Dataset(train=True)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=True)
+
+# Validationデータセットの定義
+dataset_val = Dataset(train=False)
+data_loader_val = torch.utils.data.DataLoader(dataset_val, batch_size=8, shuffle=True)
 
 # モデルの定義
 model = Model()
@@ -40,6 +44,19 @@ for current_epoch, epoch in enumerate(range(num_epochs)):
     running_loss += loss.item()
 
     print(f"Epoch:{current_epoch + 1}/{num_epochs} Batch:{i}/{len(data_loader)} Loss:{running_loss / (i + 1)}")
+
+  # Epochの学習結果をinput, output, targetに分けてmatplotlibでファイルに出力
+  inputs, targets = next(iter(data_loader_val))
+  inputs, targets = inputs.to(device), targets.to(device)
+  outputs = model(inputs)
+  inputs, outputs, targets = inputs.cpu().numpy(), outputs.cpu().detach().numpy(), targets.cpu().numpy()
+
+  fig, axes = plt.subplots(3, 8, figsize=(16, 6))
+  for i in range(8):
+    axes[0][i].imshow(inputs[i].transpose(1, 2, 0) * 255.0)
+    axes[1][i].imshow(outputs[i][0])
+    axes[2][i].imshow(targets[i][0])
+  plt.savefig(f"output_{current_epoch + 1}.png")
 
   losses.append(running_loss / len(data_loader))
   print(f'Epoch: [{epoch + 1}/{num_epochs}] Loss: {running_loss / len(data_loader)}')
