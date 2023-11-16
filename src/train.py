@@ -45,7 +45,7 @@ for current_epoch, epoch in enumerate(range(num_epochs)):
 
     print(f"Epoch:{current_epoch + 1}/{num_epochs} Batch:{i}/{len(data_loader)} Loss:{running_loss / (i + 1)}")
 
-  # Epochの学習結果をinput, output, targetに分けてmatplotlibでファイルに出力
+  # Epochの学習結果をinput, output, targetに分けてmatplotlibでファイルに出力する。目盛りはなし。input, output, targetのタイトルをつける。
   inputs, targets = next(iter(data_loader_val))
   inputs, targets = inputs.to(device), targets.to(device)
   outputs = model(inputs)
@@ -56,6 +56,12 @@ for current_epoch, epoch in enumerate(range(num_epochs)):
     axes[0][i].imshow(inputs[i].transpose(1, 2, 0) * 255.0)
     axes[1][i].imshow(outputs[i][0])
     axes[2][i].imshow(targets[i][0])
+    axes[0][i].axis('off')
+    axes[1][i].axis('off')
+    axes[2][i].axis('off')
+    axes[0][0].set_title('input')
+    axes[1][0].set_title('output')
+    axes[2][0].set_title('target')
   plt.savefig(f"output_{current_epoch + 1}.png")
 
   losses.append(running_loss / len(data_loader))
