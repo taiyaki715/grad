@@ -33,9 +33,6 @@ class Dataset(torch.utils.data.Dataset):
     depth = torchvision.transforms.functional.crop(depth, i, j, h, w)
 
     image = torchvision.transforms.ToTensor()(image)
-    depth = torchvision.transforms.ToTensor()(depth)
-
-    image = image / 255.0
-    depth = depth / 255.0
+    depth = torchvision.transforms.ToTensor()(depth) / 350.0
 
     return image, depth
