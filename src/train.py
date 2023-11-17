@@ -4,7 +4,10 @@ import matplotlib.pyplot as plt
 from data_loader import Dataset
 from model import Model
 
-batch_size = 2
+from tqdm import tqdm
+
+# パラメータ
+batch_size = 8
 num_epochs = 5
 lerning_rate = 0.001
 device_type = 'mps'
@@ -15,7 +18,7 @@ data_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffl
 
 # Validationデータセットの定義
 dataset_val = Dataset(train=False)
-data_loader_val = torch.utils.data.DataLoader(dataset_val, batch_size=batch_size, shuffle=True)
+data_loader_val = torch.utils.data.DataLoader(dataset_val, batch_size=8, shuffle=False)
 
 # モデルの定義
 model = Model()
@@ -30,42 +33,57 @@ criterion = torch.nn.MSELoss()
 # 最適化アルゴリズム
 optimizer = torch.optim.Adam(model.parameters(), lr=lerning_rate)
 
-losses = []
-
+# 学習
 for current_epoch, epoch in enumerate(range(num_epochs)):
-  running_loss = 0.0
+  model.train()
+  train_loss = 0.0
+  with tqdm(data_loader, total=len(data_loader), desc=f'Epoch {current_epoch + 1}/{num_epochs}', unit='batch') as pbar:
+    for i, batch in enumerate(pbar):
+      pbar.set_postfix_str(f'Loss: {round(train_loss / (i + 1), 5)}')
+      inputs, targets = batch
+      inputs, targets = inputs.to(device), targets.to(device)
+      optimizer.zero_grad()
+      outputs = model(inputs)
+      loss = criterion(outputs, targets)
+      loss.backward()
+      optimizer.step()
+      train_loss += loss.item()
 
-  for i, batch in enumerate(data_loader):
-    inputs, targets = batch
-    inputs, targets = inputs.to(device), targets.to(device)
-    optimizer.zero_grad()
-    outputs = model(inputs)
-    loss = criterion(outputs, targets)
-    loss.backward()
-    optimizer.step()
-    running_loss += loss.item()
+  # テストデータで損失の計算
+  model.eval()
+  val_loss = 0.0
+  with tqdm(data_loader_val, total=len(data_loader_val), desc=f'Val {current_epoch + 1}/{num_epochs}', unit='batch') as pbar:
+    for i, batch in enumerate(pbar):
+      pbar.set_postfix_str(f'Loss: {round(val_loss / (i + 1), 5)}')
+      inputs, targets = batch
+      inputs, targets = inputs.to(device), targets.to(device)
+      outputs = model(inputs)
+      loss = criterion(outputs, targets)
+      val_loss += loss.item()
 
-    print(f"Epoch:{current_epoch + 1}/{num_epochs} Batch:{i + 1}/{len(data_loader)} Loss:{running_loss / (i + 1)}")
-
+  # テストデータをinput8枚分可視化。inputs, outputs, targetsの順に並べ、ラベルをつける。軸はなし。データのスケールはinputひとつごとに調整。最後にファイルに保存。
+  fig, axes = plt.subplots(3, 8, figsize=(16, 6))
   inputs, targets = next(iter(data_loader_val))
   inputs, targets = inputs.to(device), targets.to(device)
   outputs = model(inputs)
-  inputs, outputs, targets = inputs.cpu().numpy(), outputs.cpu().detach().numpy(), targets.cpu().numpy()
+  inputs = inputs.cpu().numpy()
+  targets = targets.cpu().numpy()
+  outputs = outputs.cpu().detach().numpy()
 
-  fig, axes = plt.subplots(3, batch_size, figsize=(16, 6))
-  for i in range(batch_size):
+  for i in range(8):
     axes[0][i].imshow(inputs[i].transpose(1, 2, 0))
     axes[1][i].imshow(outputs[i][0])
     axes[2][i].imshow(targets[i][0])
     axes[0][i].axis('off')
     axes[1][i].axis('off')
     axes[2][i].axis('off')
-    axes[0][0].set_title('input')
-    axes[1][0].set_title('output')
-    axes[2][0].set_title('target')
-  plt.savefig(f"output_{current_epoch + 1}.png")
 
-  losses.append(running_loss / len(data_loader))
-  print(f'Epoch: [{epoch + 1}/{num_epochs}] Loss: {running_loss / len(data_loader)}')
 
-print(losses)
+  axes[0][0].set_title('Input')
+  axes[1][0].set_title('Output')
+  axes[2][0].set_title('Target')
+
+  plt.savefig(f'epoch_{epoch + 1}.png')
+
+
+  print(f'Epoch {epoch + 1}/{num_epochs} MSE: {val_loss / len(data_loader_val)}')
