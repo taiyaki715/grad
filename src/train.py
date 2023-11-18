@@ -1,24 +1,25 @@
-import torch
 import matplotlib.pyplot as plt
-
-from data_loader import Dataset
-from model import Model
-
+import torch
 from tqdm import tqdm
 
+from data_loader import Dataset
+from models.model import Model
+
+from losses.ssim_loss import SSIMLoss
+
 # パラメータ
-batch_size = 8
+batch_size = 1
 num_epochs = 5
-lerning_rate = 0.001
+lerning_rate = 1e-3
 device_type = 'mps'
 
 # データセットの定義
-dataset = Dataset(train=False)
+dataset = Dataset(train=True)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 # Validationデータセットの定義
 dataset_val = Dataset(train=False)
-data_loader_val = torch.utils.data.DataLoader(dataset_val, batch_size=8, shuffle=False)
+data_loader_val = torch.utils.data.DataLoader(dataset_val, batch_size=8, shuffle=True)
 
 # モデルの定義
 model = Model()
@@ -28,7 +29,7 @@ device = torch.device(device_type);
 model.to(device);
 
 # 損失関数
-criterion = torch.nn.MSELoss()
+criterion = SSIMLoss()
 
 # 最適化アルゴリズム
 optimizer = torch.optim.Adam(model.parameters(), lr=lerning_rate)
@@ -78,12 +79,18 @@ for current_epoch, epoch in enumerate(range(num_epochs)):
     axes[1][i].axis('off')
     axes[2][i].axis('off')
 
-
   axes[0][0].set_title('Input')
   axes[1][0].set_title('Output')
   axes[2][0].set_title('Target')
 
+  #カラーバーの表示
+  fig.subplots_adjust(right=0.8)
+  cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+  fig.colorbar(axes[0][0].imshow(inputs[0].transpose(1, 2, 0)), cax=cbar_ax)
+
   plt.savefig(f'epoch_{epoch + 1}.png')
 
-
   print(f'Epoch {epoch + 1}/{num_epochs} MSE: {val_loss / len(data_loader_val)}')
+
+# モデルの保存
+torch.save(model.state_dict(), 'model.pth')
