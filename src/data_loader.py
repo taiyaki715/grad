@@ -6,10 +6,7 @@ import torch
 import torchvision
 
 class Dataset(torch.utils.data.Dataset):
-  def __init__(self, train=True):
-    train_path = "/Volumes/western_digital_4tb/train"
-    test_path = "/Volumes/western_digital_4tb/val"
-
+  def __init__(self, train_path, test_path, train=True):
     image_paths = [str(path) for path in glob.glob(f"{train_path if train else test_path}/*/*/*/*.png", recursive=True)]
     depth_paths = [path.replace(".png", "_depth.npy") for path in image_paths]
     self.data_paths = list(zip(image_paths, depth_paths))

@@ -1,8 +1,8 @@
 import torch
 import torchinfo
 
-from vit import CustomViT
-from head import Head
+from models.vit import CustomViT
+from models.head import Head
 
 class Model(torch.nn.Module):
   def __init__(self):
