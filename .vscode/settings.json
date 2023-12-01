@@ -1,0 +1,20 @@
+{
+  "cSpell.words": [
+    "arange",
+    "cbar",
+    "colorbar",
+    "dtype",
+    "figsize",
+    "fromarray",
+    "IMAGENET",
+    "imshow",
+    "lerning",
+    "maxpool",
+    "optim",
+    "relu",
+    "SSIM",
+    "torchinfo",
+    "torchvision",
+    "unsqueeze"
+  ]
+}

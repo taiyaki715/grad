@@ -30,6 +30,10 @@ class Dataset(torch.utils.data.Dataset):
     depth = torchvision.transforms.functional.crop(depth, i, j, h, w)
 
     image = torchvision.transforms.ToTensor()(image)
-    depth = torchvision.transforms.ToTensor()(depth) / 350.0
+
+    # log10で対数変換した上で0から1に正規化
+    depth = torchvision.transforms.ToTensor()(depth)
+    depth = torch.log10(depth + 1e-3)
+    depth = (depth - depth.min()) / (depth.max() - depth.min())
 
     return image, depth

@@ -20,28 +20,31 @@ class Trainer:
     self.model.to(self.device);
 
     # データセットの定義
-    dataset_train = Dataset(self.params['train_path'], train=True)
+    dataset_train = Dataset(self.params['train_path'], self.params['test_path'], train=True)
     self.data_loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=self.params['batch_size'], shuffle=True)
 
     # Validationデータセットの定義
-    dataset_test = Dataset(self.params['test_path'], train=False)
+    dataset_test = Dataset(self.params['train_path'], self.params['test_path'], train=False)
     self.data_loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=8, shuffle=True)
+
+    self.train_loss = 0.0
+    self.test_loss = 0.0
 
   def run(self):
     for epoch in range(self.params['num_epochs']):
       # 学習
-      train_loss = 0.0
+      self.train_loss = 0.0
       with tqdm(self.data_loader_train, total=len(self.data_loader_train), desc=f'Epoch {epoch + 1}/{self.params["num_epochs"]}', unit='batch') as pbar:
         for i, batch in enumerate(pbar):
-          pbar.set_postfix_str(f'Loss: {round(train_loss / (i + 1), 5)}')
+          pbar.set_postfix_str(f'Loss: {round(self.train_loss / (i + 1), 5)}')
           self._train(batch)
 
       # テスト
-      test_loss = 0.0
+      self.test_loss = 0.0
       with tqdm(self.data_loader_test, total=len(self.data_loader_test), desc=f'Test {epoch + 1}/{self.params["num_epochs"]}', unit='batch') as pbar:
         for i, batch in enumerate(pbar):
-          pbar.set_postfix_str(f'Loss: {round(test_loss / (i + 1), 5)}')
-          self._test(self.model)
+          pbar.set_postfix_str(f'Loss: {round(self.test_loss / (i + 1), 5)}')
+          self._test(batch)
 
       # 可視化
       self._visualize(epoch)
@@ -62,22 +65,22 @@ class Trainer:
     loss = self.criterion(outputs, targets)
     loss.backward()
     self.optimizer.step()
-    train_loss += loss.item()
+    self.train_loss += loss.item()
 
   def _test(self, batch):
     self.model.eval()
 
     inputs, targets = batch
-    inputs, targets = inputs.to(self.params['device']), targets.to(self.params['device'])
+    inputs, targets = inputs.to(self.params['device_type']), targets.to(self.params['device_type'])
     outputs = self.model(inputs)
     loss = self.params['criterion'](outputs, targets)
-    val_loss += loss.item()
+    self.test_loss += loss.item()
 
   def _visualize(self, epoch):
     fig, axes = plt.subplots(3, 8, figsize=(16, 6))
-    inputs, targets = next(iter(self.data_loader_val))
-    inputs, targets = inputs.to(self.params['device']), targets.to(self.params['device'])
-    outputs = self.params['model'](inputs)
+    inputs, targets = next(iter(self.data_loader_test))
+    inputs, targets = inputs.to(self.params['device_type']), targets.to(self.params['device_type'])
+    outputs = self.model(inputs)
     inputs = inputs.cpu().numpy()
     targets = targets.cpu().numpy()
     outputs = outputs.cpu().detach().numpy()
