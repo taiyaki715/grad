@@ -11,10 +11,12 @@
     "lerning",
     "maxpool",
     "optim",
+    "pbar",
     "relu",
     "SSIM",
     "torchinfo",
     "torchvision",
+    "tqdm",
     "unsqueeze"
   ]
 }

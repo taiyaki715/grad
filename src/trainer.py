@@ -73,7 +73,7 @@ class Trainer:
     inputs, targets = batch
     inputs, targets = inputs.to(self.params['device_type']), targets.to(self.params['device_type'])
     outputs = self.model(inputs)
-    loss = self.params['criterion'](outputs, targets)
+    loss = self.criterion(outputs, targets)
     self.test_loss += loss.item()
 
   def _visualize(self, epoch):
