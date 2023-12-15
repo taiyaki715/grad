@@ -12,10 +12,11 @@ class Model(torch.nn.Module):
     self.head = Head()
 
   def __str__(self):
-    return torchinfo.summary(self, input_size=(1, 3, 512, 512))
+    return torchinfo.summary(self, input_size=(1, 3, 256, 256))
 
-  def forward(self, original_inputs):
-    vit_outputs = self.vit(original_inputs)
-    x = self.head(vit_outputs, original_inputs)
+  def forward(self, x):
+    x = self.vit(x)
+    x = torch.reshape(x, (-1, 1, 32, 32))
+    x = self.head(x)
 
     return x

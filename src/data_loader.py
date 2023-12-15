@@ -20,19 +20,16 @@ class Dataset(torch.utils.data.Dataset):
     image = Image.open(image_path)
     depth = Image.fromarray(np.load(depth_path).squeeze(axis=-1))
 
-    image, depth = self.transform(image, depth)
+    image, depth = self._transform(image, depth)
 
     return image, depth
 
-  def transform(self, image, depth):
-    i, j, h, w = torchvision.transforms.RandomCrop.get_params(image, output_size=(512, 512))
+  def _transform(self, image, depth):
+    i, j, h, w = torchvision.transforms.RandomCrop.get_params(image, output_size=(256, 256))
     image = torchvision.transforms.functional.crop(image, i, j, h, w)
     depth = torchvision.transforms.functional.crop(depth, i, j, h, w)
 
     image = torchvision.transforms.ToTensor()(image)
-
     depth = torchvision.transforms.ToTensor()(depth) / 350.0
-    depth = torch.log10(depth + 1e-3)
-    depth = (depth - depth.min()) / (depth.max() - depth.min())
 
     return image, depth
