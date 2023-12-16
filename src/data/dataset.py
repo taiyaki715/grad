@@ -30,8 +30,8 @@ class Dataset(torch.utils.data.Dataset):
     return image, depth
 
   def _transform(self, image, depth):
-    image = torchvision.transforms.functional.resize(image, (256, 256), interpolation=Image.BILINEAR)
-    depth = torchvision.transforms.functional.resize(depth, (256, 256), interpolation=Image.BILINEAR)
+    image = torchvision.transforms.functional.resize(image, (224, 224), interpolation=Image.BILINEAR)
+    depth = torchvision.transforms.functional.resize(depth, (224, 224), interpolation=Image.BILINEAR)
 
     image_tensor = torchvision.transforms.functional.to_tensor(image)
     depth_tensor = torchvision.transforms.functional.to_tensor(depth) / 10.0
