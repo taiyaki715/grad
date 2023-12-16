@@ -31,14 +31,19 @@ class Trainer:
     # TensorBoardの初期化
     self.summary_writer = SummaryWriter(log_dir='logs')
 
+    # 現在のエポック数とステップ数の初期化
+    self.current_epoch = 0
+    self.current_step = 0
+
   def run(self):
     for epoch in range(self.params['num_epochs']):
       self.current_epoch = epoch
       self.train_loss = 0.0
       with tqdm(self.data_loader_train) as pbar:
-        for i, batch in enumerate(pbar):
+        for step, batch in enumerate(pbar):
+          self.current_step = step
           self._train(batch)
-          self._tensorboard(i)
+          self._tensorboard()
       self._visualize()
 
   def _train(self, batch):
@@ -68,9 +73,13 @@ class Trainer:
 
   def _visualize(self):
     fig, axes = plt.subplots(3, 8, figsize=(16, 6))
-    inputs, targets = self.data_loader_test.dataset[0:8]
+
+    # テストデータで出力画像を生成
+    inputs, targets = next(iter(self.data_loader_test))
     inputs, targets = inputs.to(self.params['device_type']), targets.to(self.params['device_type'])
     outputs = self.model(inputs)
+
+    # デバイスからCPUに転送
     inputs = inputs.cpu().numpy()
     targets = targets.cpu().numpy()
     outputs = outputs.cpu().detach().numpy()
@@ -97,5 +106,5 @@ class Trainer:
     # 画像の保存
     plt.savefig(f'epoch_{self.current_epoch + 1}.png')
 
-  def _tensorboard(self, i):
-    self.summary_writer.add_scalar('Loss/train', self.train_loss / (i + 1), self.current_epoch * len(self.data_loader_train) + i)
+  def _tensorboard(self):
+    self.summary_writer.add_scalar('Loss/train', self.train_loss / (self.current_step + 1), self.current_epoch * len(self.data_loader_train) + self.current_step)
