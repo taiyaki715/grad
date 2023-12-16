@@ -3,39 +3,30 @@ import torch
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from data_loader import Dataset
+from data.dataset import Dataset
 
 class Trainer:
   def __init__(self, params):
     self.params = params
-
-    # モデル
     self.model = self.params['model']()
-  
-    # loss
     self.criterion = self.params['criterion']()
-  
-    # optimizer
     self.optimizer = self.params['optimizer'](self.model.parameters(), lr=params['lerning_rate'])
 
     # モデルをGPUに転送
     self.device = torch.device(self.params['device_type']);
     self.model.to(self.device);
 
-    # データセットの定義
-    dataset_train = Dataset(self.params['train_path'], self.params['test_path'], train=True)
+    # 学習用データセットの作成
+    dataset_train = Dataset(is_train=True)
     self.data_loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=self.params['batch_size'], shuffle=True)
 
-    # Validationデータセットの定義
-    dataset_test = Dataset(self.params['train_path'], self.params['test_path'], train=False)
+    # 検証用データセットの作成
+    dataset_test = Dataset(is_train=False)
     self.data_loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=8, shuffle=True)
 
     # lossの初期化
     self.train_loss = 0.0
     self.test_loss = 0.0
-
-    # epochの初期化
-    self.current_epoch = 0
 
     # TensorBoardの初期化
     self.summary_writer = SummaryWriter(log_dir='logs')
@@ -47,17 +38,14 @@ class Trainer:
       with tqdm(self.data_loader_train) as pbar:
         for i, batch in enumerate(pbar):
           self._train(batch)
-          test_batch = self.data_loader_test.__iter__().__next__()
-          self._test(test_batch)
           self._tensorboard(i)
-
-      # 可視化
       self._visualize()
 
   def _train(self, batch):
+    # モデルを学習モードに設定
     self.model.train()
 
-    # バッチデータをデバイスに転送
+    # データをデバイスに転送
     inputs, targets = batch
     inputs, targets = inputs.to(self.device), targets.to(self.device)
 
@@ -80,7 +68,7 @@ class Trainer:
 
   def _visualize(self):
     fig, axes = plt.subplots(3, 8, figsize=(16, 6))
-    inputs, targets = next(iter(self.data_loader_test))
+    inputs, targets = self.data_loader_test.dataset[0:8]
     inputs, targets = inputs.to(self.params['device_type']), targets.to(self.params['device_type'])
     outputs = self.model(inputs)
     inputs = inputs.cpu().numpy()
@@ -111,4 +99,3 @@ class Trainer:
 
   def _tensorboard(self, i):
     self.summary_writer.add_scalar('Loss/train', self.train_loss / (i + 1), self.current_epoch * len(self.data_loader_train) + i)
-    self.summary_writer.add_scalar('Loss/test', self.test_loss / (i + 1), self.current_epoch * len(self.data_loader_train) + i)

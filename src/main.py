@@ -1,6 +1,5 @@
 import torch
 
-from losses.ssim_loss import SSIMLoss
 from models.model import Model
 from trainer import Trainer
 
@@ -12,8 +11,6 @@ params = {
   'criterion': torch.nn.MSELoss,
   'optimizer': torch.optim.Adam,
   'model': Model,
-  'train_path': '/Volumes/western_digital_4tb/train',
-  'test_path': '/Volumes/western_digital_4tb/val'
 }
 
 trainer = Trainer(params)

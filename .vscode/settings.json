@@ -13,10 +13,12 @@
     "optim",
     "pbar",
     "relu",
+    "rezise",
     "SSIM",
     "torchinfo",
     "torchvision",
     "tqdm",
     "unsqueeze"
-  ]
+  ],
+  "cSpell.ignoreWords": ["sayakpaul", "tensorboard"]
 }
