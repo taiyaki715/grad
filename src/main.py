@@ -2,6 +2,7 @@ import torch
 
 from models.model import Model
 from trainer import Trainer
+3
 
 params = {
   'batch_size': 16,
